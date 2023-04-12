@@ -1,6 +1,8 @@
 const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
+const ObjectsToCsv = require("objects-to-csv");
 
+// Data Structure
 const scrapeResults = [
     {
         name: "Men's Relaxed Fit Strapback Hat",
@@ -77,4 +79,15 @@ async function sleep(miliseconds) {
     return new Promise((resolve) => setTimeout(resolve, miliseconds));
 }
 
-scrape();
+async function createCSV(data) {
+    let csv = new ObjectsToCsv(data);
+
+    await csv.toDisk("./baseballCaps.csv");
+}
+
+async function scrapeAmazon() {
+    await scrape();
+    await createCSV(results);
+}
+
+scrapeAmazon();
