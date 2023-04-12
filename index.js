@@ -1,6 +1,8 @@
 const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
+
 const ObjectsToCsv = require("objects-to-csv");
+const fs = require("fs");
 
 // Data Structure
 const scrapeResults = [
@@ -85,9 +87,16 @@ async function createCSV(data) {
     await csv.toDisk("./baseballCaps.csv");
 }
 
+async function createJSON(data) {
+    const jsonData = JSON.stringify(data);
+
+    fs.writeFileSync("baseballCaps.json", jsonData);
+}
+
 async function scrapeAmazon() {
     await scrape();
-    await createCSV(results);
+    //await createCSV(results);
+    await createJSON(results);
 }
 
 scrapeAmazon();
