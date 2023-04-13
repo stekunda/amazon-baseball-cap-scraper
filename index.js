@@ -5,15 +5,16 @@ const ObjectsToCsv = require("objects-to-csv");
 const fs = require("fs");
 
 // Data Structure
-const scrapeResults = [
+
+/* const scrapeResults = [
     {
         name: "Men's Relaxed Fit Strapback Hat",
         brand: "Falari",
         price: 8.5,
-        url: "https://www.amazon.com/Falari-Baseball-Adjustable-Solid-G001-01-Black/dp/B074CN1RF8/ref=sr_1_5?crid=17SO003E1ZBDD&keywords=baseball%2Bcaps&qid=1680956026&sprefix=baseball%2Bcaps%2Caps%2C118&sr=8-5&th=1",
+        url: "https://www.amazon.com/Falari-Baseball-Adjustable-Solid-G001-01-Black/dp/B074CN1RF8/ref...",
         rating: 4.7,
     },
-];
+ ]; */
 
 let results = [];
 
@@ -22,7 +23,7 @@ async function scrape() {
     const page = await browser.newPage();
 
     await page.goto(
-        "https://www.amazon.com/s?k=baseball+caps&crid=17SO003E1ZBDD&qid=1681236643&sprefix=baseball+caps%2Caps%2C118&ref=sr_pg_"
+        "https://www.amazon.com/s?k=baseball+caps&crid=17SO003E1ZBDD&qid=1681275046&sprefix=baseball+caps%2Caps%2C118&ref=sr_pg_1"
     );
 
     while (
@@ -31,7 +32,7 @@ async function scrape() {
         )
     ) {
         const html = await page.content();
-        await sleep(1000); // 1 second sleep
+        await sleep(1000); // Sleep for 1 second
         const $ = cheerio.load(html);
 
         // using cheerio to scrape the necessary data
@@ -84,18 +85,18 @@ async function sleep(miliseconds) {
 async function createCSV(data) {
     let csv = new ObjectsToCsv(data);
 
-    await csv.toDisk("./baseballCaps.csv");
+    await csv.toDisk("./data.csv");
 }
 
 async function createJSON(data) {
     const jsonData = JSON.stringify(data);
 
-    fs.writeFileSync("baseballCaps.json", jsonData);
+    fs.writeFileSync("data.json", jsonData);
 }
 
 async function scrapeAmazon() {
     await scrape();
-    //await createCSV(results);
+    await createCSV(results);
     await createJSON(results);
 }
 
