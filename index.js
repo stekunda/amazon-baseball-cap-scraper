@@ -1,25 +1,20 @@
-const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
+const puppeteerExtra = require("puppeteer-extra");
+const stealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 const ObjectsToCsv = require("objects-to-csv");
 const fs = require("fs");
 
-// Data Structure
-
-/* const scrapeResults = [
-    {
-        name: "Men's Relaxed Fit Strapback Hat",
-        brand: "Falari",
-        price: 8.5,
-        url: "https://www.amazon.com/Falari-Baseball-Adjustable-Solid-G001-01-Black/dp/B074CN1RF8/ref...",
-        rating: 4.7,
-    },
- ]; */
-
 let results = [];
 
+async function timeout(delayInterval) {
+    console.log(`Delaying for ${delayInterval} ms...`);
+    return new Promise((resolve) => setTimeout(resolve, delayInterval));
+}
+
 async function scrape() {
-    const browser = await puppeteer.launch({ headless: false });
+    puppeteerExtra.use(stealthPlugin());
+    const browser = await puppeteerExtra.launch({ headless: false });
     const page = await browser.newPage();
 
     await page.goto(
@@ -32,14 +27,23 @@ async function scrape() {
         )
     ) {
         const html = await page.content();
-        await sleep(1000); // Sleep for 1 second
+
+        // Choose a random delay interval from the provided options
+        const delayOptions = [
+            1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000,
+            20000, 25000, 30000,
+        ];
+        const delayInterval =
+            delayOptions[Math.floor(Math.random() * delayOptions.length)];
+
+        await timeout(delayInterval); // Sleeps for a random amount of time
         const $ = cheerio.load(html);
 
         // using cheerio to scrape the necessary data
-        $(".a-section.a-spacing-base.a-text-center")
+        $(".sg-col-inner")
             .map((index, element) => {
                 const nameElement = $(element).find(
-                    ".a-size-mini.a-spacing-none.a-color-base.s-line-clamp-2"
+                    ".a-size-base-plus.a-color-base.a-text-normal"
                 );
                 const brandElement = $(element).find(".s-line-clamp-1");
                 const priceElement = $(element).find(".a-price");
@@ -58,7 +62,10 @@ async function scrape() {
                 const image = $(imgElement).attr("src");
 
                 const item = { name, brand, price, rating, image, url };
-                results.push(item);
+
+                if (item.name != "") {
+                    results.push(item);
+                }
             })
             .get();
 
@@ -69,17 +76,12 @@ async function scrape() {
         await page
             .waitForSelector(
                 ".s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator",
-                { timeout: 2000 } // increase timeout to 10 seconds
+                { timeout: 2000 } // increase timeout to 2 seconds
             )
             .catch(() => {}); // catch timeout error and continue
     }
     console.log(results);
     await browser.close();
-}
-
-// adding a delay
-async function sleep(miliseconds) {
-    return new Promise((resolve) => setTimeout(resolve, miliseconds));
 }
 
 async function createCSV(data) {
@@ -96,7 +98,7 @@ async function createJSON(data) {
 
 async function scrapeAmazon() {
     await scrape();
-    await createCSV(results);
+    //await createCSV(results);
     await createJSON(results);
 }
 
